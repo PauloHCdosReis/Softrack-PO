@@ -1,0 +1,240 @@
+/* 
+      Tela de Login
+
+import {
+  Button,
+  Box,
+  Divider,
+  Stack,
+  Input,
+  Icon,
+  Pressable,
+} from "native-base";
+import { View, Image, StyleSheet } from "react-native";
+import React, { useState } from "react";
+import { AntDesign } from "@expo/vector-icons";
+import { Entypo } from "@expo/vector-icons";
+import { Feather } from "@expo/vector-icons";
+import { MaterialIcons } from "@expo/vector-icons";
+import useCustomToast from "@/hooks/toast";
+import { colors } from "../colors";
+import { useColorScheme } from "nativewind";
+import Clock from "@/components/date";
+
+export const Home = () => {
+  const styles = StyleSheet.create({
+    container: {
+      paddingTop: 50,
+    },
+    stretch: {
+      width: 400,
+      height: 70,
+      marginBottom: 20,
+      resizeMode: "stretch",
+    },
+  });
+  const {colorScheme} = useColorScheme()
+  const [togglePassword, setTogglePassword] = useState(false);
+  const { showToast } = useCustomToast();
+
+
+  return (
+    <View className="bg-light-fundo flex items-center justify-center min-h-screen dark:bg-dark-fundo">
+      {colorScheme === "dark" ? (
+        <Image
+          style={styles.stretch}
+          source={require("../../../assets/image/LogoSoftrackDark.png")}
+        />
+      ) : (
+        <Image
+          style={styles.stretch}
+          source={require("../../../assets/image/LogoSoftrackLight.png")}
+        />
+      )}
+      <View className="flex-row gap-6">
+        <Box w="48">
+          <Button
+            _pressed={{bg:''}}
+            _text={{
+              color: colors[colorScheme].text2
+            }}
+            leftIcon={<AntDesign name="idcard" size={24} color={colors[colorScheme].icons} />}
+            bg={colors[colorScheme].primaria}
+            className="rounded-lg"
+            onPress={() => showToast({
+              status: 'info',
+              description: 'Acesso via crachá',
+            })}>
+            Acesso via Cracha
+          </Button>
+        </Box>
+        <Box w="48">
+          <Button
+            _pressed={{bg:''}}
+            _text={{
+              color: colors[colorScheme].text2
+            }}
+            leftIcon={<Entypo name="fingerprint" size={24} color={colors[colorScheme].icons} />}
+            bg={colors[colorScheme].primaria}
+            className="rounded-lg"
+            onPress={() => showToast({
+              status: 'warning',
+              description: 'Acesso via biometria',
+            })}>
+            Acesso via Biometria
+          </Button>
+        </Box>
+      </View>
+      <View className="flex-row mt-1">
+        <Divider marginRight={5} w={48} my="3" bg={colors[colorScheme].primaria} />
+        <Divider w={48} my="3" bg={colors[colorScheme].primaria} />
+      </View>
+      <Stack space={4} w="100%" alignItems="center">
+        <Input
+          w={{
+            base: "100%",
+            md: "50%",
+          }}
+          _light={{
+            bg: "coolGray.100",
+            borderColor: "#465DFF",
+            color: "black",
+            placeholderTextColor: "black",
+            _hover: {
+              bg: "coolGray.200",
+              borderColor: "#465DFF",
+            },
+            _focus: {
+              bg: "coolGray.200:alpha.70",
+              borderColor: "#465DFF",
+            },
+          }}
+          _dark={{
+            bg: "coolGray.800",
+            borderColor: "rgb(0, 255, 159)",
+            color: "white",
+            placeholderTextColor: "white",
+            _hover: {
+              bg: "coolGray.900",
+              borderColor: "rgb(0, 255, 159)",
+            },
+            _focus: {
+              bg: "coolGray.900:alpha.70",
+              borderColor: "rgb(0, 255, 159)",
+            },
+          }}
+          InputLeftElement={
+            <Icon
+              as={
+                <AntDesign
+                  name="user"
+                  size={24}
+                  color={colors[colorScheme].icons2}
+                />
+              }
+              size={5}
+              ml="2"
+              color={colors[colorScheme].icons2}
+            />
+          }
+          placeholder="Username"
+        />
+        <Input
+          w={{
+            base: "100%",
+            md: "50%",
+          }}
+          _light={{
+            bg: "coolGray.100",
+            borderColor: "#465DFF",
+            color: "black",
+            placeholderTextColor: "black",
+            _hover: {
+              bg: "coolGray.200",
+              borderColor: "#465DFF",
+            },
+            _focus: {
+              bg: "coolGray.200:alpha.70",
+              borderColor: "#465DFF",
+            },
+          }}
+          _dark={{
+            bg: "coolGray.800",
+            borderColor: "rgb(0, 255, 159)",
+            color: "white",
+            placeholderTextColor: "white",
+            _hover: {
+              bg: "coolGray.900",
+              borderColor: "rgb(0, 255, 159)",
+            },
+            _focus: {
+              bg: "coolGray.900:alpha.70",
+              borderColor: "rgb(0, 255, 159)",
+            },
+          }}
+          type={togglePassword ? "text" : "password"}
+          InputLeftElement={
+            <Icon
+              as={
+                <MaterialIcons
+                  name="password"
+                  size={24}
+                  color={colors[colorScheme].icons2}
+                />
+              }
+              size={5}
+              ml="2"
+              color={colors[colorScheme].icons2}
+            />
+          }
+          InputRightElement={
+            <Pressable onPress={() => setTogglePassword(!togglePassword)}>
+              <Icon
+                as={
+                  <Feather
+                    name={togglePassword ? "eye" : "eye-off"}
+                    size={24}
+                    color={colors[colorScheme].icons2}
+                  />
+                }
+                size={5}
+                mr="2"
+                color={colors[colorScheme].icons2}
+              />
+            </Pressable>
+          }
+          placeholder="Senha"
+        />
+      </Stack>
+
+      <View className="flex-row mt-1">
+        <Divider marginRight={5} w={48} my="3" bg={colors[colorScheme].primaria} />
+        <Divider w={48} my="3" bg={colors[colorScheme].primaria} />
+      </View>
+      <Box w="80">
+        <Button
+          _pressed={{bg:''}}
+          _text={{
+            color: colors[colorScheme].text2
+          }}
+          leftIcon={<Entypo name="fingerprint" size={24} color={colors[colorScheme].icons} />}
+          bg={colors[colorScheme].primaria}
+          className="rounded-lg"
+          onPress={() => showToast({
+            status: 'success',
+            description: 'Sucesso ao Login',
+          })}>
+          Acessar
+        </Button>
+      </Box>
+      {
+        <Box position="absolute" top={5} right={5} p={2}>
+          <Clock />
+        </Box>
+      }
+    </View>
+  );
+};
+export default Home;
+ */
+ 
