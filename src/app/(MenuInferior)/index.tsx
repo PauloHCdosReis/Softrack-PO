@@ -3,16 +3,17 @@ import { Container } from "@/components/ui";
 import { View, Text, StyleSheet, Dimensions, Pressable } from "react-native";
 import { colors } from "../colors";
 import Carousel, { ICarouselInstance } from "react-native-reanimated-carousel";
-import { Progress, Modal, Button, ScrollView } from "native-base";
+import { Progress, Button, ScrollView } from "native-base";
 import { useEffect, useState, useRef } from "react";
 import { AntDesign } from "@expo/vector-icons";
 import { Checklist, Pergunta } from "@/json/checklist";
+import ModalDescription from "@/components/modais/ModalDescription";
 
 export const Home = () => {
-  //valor do dark mode
   const { colorScheme } = useColorScheme();
   //pegar largura da tela
   const widthDimensions = Dimensions.get("window").width;
+  const heightDimensions = Dimensions.get("window").height;
   // barra de progresso
   const [checklistProgress, setChecklistProgress] = useState(0);
   // mudar checklist
@@ -138,20 +139,15 @@ export const Home = () => {
       // adiciona o ultimo slider ao array das perguntas
       perguntasCopiadas.push(itemFinal);
     }
-
-    // ordena as perguntas com o campo ordem
     const perguntasOrdenadas = perguntasCopiadas.sort(
       (a, b) => a.ordem - b.ordem
     );
     perguntasOrdenadas.forEach((pergunta) => {
       pergunta.filhas = OrdenarPerguntas(pergunta.filhas);
     });
-
-    //retorna valor
     return perguntasOrdenadas;
   }
 
-  // funcao para atualizar barra de progresso
   function BarraProgresso(index: number) {
     let porcentual = 0;
     if (toogleChecklist === "off") {
@@ -165,7 +161,7 @@ export const Home = () => {
   // style dos componentes utilizados
   const styles = StyleSheet.create({
     cardCarousel: {
-      width: widthDimensions,
+      width: '100%',
       backgroundColor: colors[colorScheme].card,
       padding: 15,
       height: "100%",
@@ -239,7 +235,7 @@ export const Home = () => {
         <Carousel
           loop={false}
           width={widthDimensions}
-          height={widthDimensions / 2.8}
+          height={heightDimensions - 120}
           autoPlay={false}
           data={toogleChecklist === "off" ? checklistDataOFF : checklistDataON}
           snapEnabled={false}
@@ -252,16 +248,13 @@ export const Home = () => {
           mode="parallax"
           modeConfig={{
             parallaxScrollingScale: 0.9,
-            parallaxScrollingOffset: 85,
+            parallaxScrollingOffset: 105,
           }}
           onSnapToItem={(index: number) => BarraProgresso(index + 1)}
           renderItem={({ index, item }: { index: number; item: Pergunta }) => (
-            // view do card dentro do carousel
             <View style={styles.cardCarousel}>
-              {/* view da pergunta pai, e para alinhar todos em uma borda */}
               {item.pergunta !== "" && (
                 <View className="flex-row p-1 pl-2 pe-2 rounded-md w-full max-w-full bg-light-primaria dark:bg-dark-primaria">
-                  {/* pressable do botão */}
                   <Pressable
                     onPress={() => {
                       setShowModal(true);
@@ -275,13 +268,11 @@ export const Home = () => {
                       color={colors[colorScheme].icons}
                     />
                   </Pressable>
-                  {/* text da pergunta */}
                   <Text className="text-base ml-2 max-w-[85%] text-light-text2 dark:text-dark-text2">
                     {String(index + 1).padStart(2, "0")} - {item.pergunta}
                   </Text>
                 </View>
               )}
-              {/* view da descrição */}
               {item.descricao !== "" && item.filhas.length === 0 && (
                 <View className="w-full p-2 mt-2 bg-slate-800 rounded-md border border-light-primaria dark:border-dark-primaria">
                   <Text className="mr-6 ml-6 mb-1 text-lg justify-center text-center text-light-text dark:text-dark-text">
@@ -297,7 +288,6 @@ export const Home = () => {
                   </ScrollView>
                 </View>
               )}
-              {/* view das filhas */}
               {item.filhas && item.filhas.length > 0 && (
                 <View className="pt-2 w-full">
                   {item.filhas.map((subPergunta) => (
@@ -311,7 +301,6 @@ export const Home = () => {
               )}
               {item.fim && (
                 <>
-                  {/* view do envio automatico */}
                   <View className="w-auto flex-row p-3 mb-8 justify-between rounded-md border border-light-primaria dark:border-dark-primaria">
                     <Text className="mr-4 text-justify text-light-text dark:text-dark-text">
                       {item.fim.autoSendTime}
@@ -351,30 +340,7 @@ export const Home = () => {
           )}
         />
       </View>
-      {/* Modal do native base */}
-      <Modal isOpen={showModal} onClose={() => setShowModal(false)} size="lg">
-        <Modal.Content maxWidth="80%" maxHeight="90%" {...styles["modal"]}>
-          <Modal.CloseButton />
-          <Modal.Header>Descrição</Modal.Header>
-          <Modal.Body>
-            <Text className="text-justify text-light-text dark:text-dark-text">
-              {activeDescription}
-            </Text>
-          </Modal.Body>
-          <Modal.Footer>
-            <Button
-              _text={{ color: colors[colorScheme].text2 }}
-              bg={colors[colorScheme].primaria}
-              _pressed={{ bg: "" }}
-              flex="1"
-              onPress={() => {
-                setShowModal(false);
-              }}>
-              Continue
-            </Button>
-          </Modal.Footer>
-        </Modal.Content>
-      </Modal>
+      <ModalDescription activeDescription={activeDescription} showModal={showModal} setShowModal={setShowModal}/>
     </Container>
   );
 };
