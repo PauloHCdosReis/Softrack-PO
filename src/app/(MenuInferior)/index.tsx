@@ -7,6 +7,7 @@ import { Progress, Modal, Button, ScrollView } from "native-base";
 import { useEffect, useState, useRef } from "react";
 import { AntDesign } from "@expo/vector-icons";
 import { Checklist, Pergunta } from "@/json/checklist";
+import TimerComponent from "@/components/timeSendAuto";
 
 export const Home = () => {
   //valor do dark mode
@@ -16,7 +17,7 @@ export const Home = () => {
   // barra de progresso
   const [checklistProgress, setChecklistProgress] = useState(0);
   // mudar checklist
-  const [toogleChecklist, setToogleChecklist] = useState<"off" | "on">("off");
+  const [toogleChecklist, setToogleChecklist] = useState<"OFF" | "ON">("OFF");
   // data do checklist no carousel off
   const [checklistDataOFF, setChecklistDataOFF] = useState<Pergunta[]>(() =>
     setDataChecklist("off")
@@ -59,13 +60,34 @@ export const Home = () => {
   // setar valor da descricao no modal
   const [activeDescription, setActiveDescription] = useState<string>("");
   // status das perguntas off e on
-  const [respostasChecklistOFF, setRespostasChecklistOFF] = useState<{
-    [key: number]: { resposta: boolean | null; critica: boolean };
-  }>([]);
+  const [respostasChecklistOFF, setRespostasChecklistOFF] = useState<
+    {
+      idPergunta: number;
+      resposta: boolean | null;
+      critica: boolean;
+    }[]
+  >(
+    checklistDataOFF.map((item) => ({
+      idPergunta: item.idPergunta,
+      resposta: null,
+      critica: item.critica,
+    }))
+  );
+
   const [respostasChecklistON, setRespostasChecklistON] = useState<
-    { [key: number]: { resposta: boolean | null; critica: boolean } }[]
-  >([]);
-  //
+    {
+      idPergunta: number;
+      resposta: boolean | null;
+      critica: boolean;
+    }[]
+  >(
+    checklistDataON.map((item) => ({
+      idPergunta: item.idPergunta,
+      resposta: null,
+      critica: false,
+    }))
+  );
+  // carouselRef
   const carouselRef = useRef<ICarouselInstance>(null);
 
   // useEffect
@@ -154,7 +176,7 @@ export const Home = () => {
   // funcao para atualizar barra de progresso
   function BarraProgresso(index: number) {
     let porcentual = 0;
-    if (toogleChecklist === "off") {
+    if (toogleChecklist === "OFF") {
       porcentual = (index * 100) / checklistDataOFF.length;
     } else {
       porcentual = (index * 100) / checklistDataON.length;
@@ -189,28 +211,30 @@ export const Home = () => {
     return perguntasOrdenadas;
   }
 
+  // setar resposta para as perguntas
   const setResposta = (
-    idPergunta: number,
-    resposta: boolean,
-    critica: boolean,
-    typeChecklist: "off" | "on"
+    resposta: boolean | null,
+    index: number,
+    typeChecklist: "OFF" | "ON"
   ) => {
-    if (typeChecklist === "off") {
-      setRespostasChecklistOFF((respostas) => ({
-        ...respostas,
-        [idPergunta]: {
-          resposta,
-          critica,
-        },
-      }));
+    if (typeChecklist === "OFF") {
+      setRespostasChecklistOFF((prev) => {
+        const newStatus = [...prev];
+        newStatus[index] = {
+          ...newStatus[index],
+          resposta: resposta,
+        };
+        return newStatus;
+      });
     } else {
-      setRespostasChecklistON((respostas) => ({
-        ...respostas,
-        [idPergunta]: {
-          resposta,
-          critica,
-        },
-      }));
+      setRespostasChecklistON((prev) => {
+        const newStatus = [...prev];
+        newStatus[index] = {
+          ...newStatus[index],
+          resposta: resposta,
+        };
+        return newStatus;
+      });
     }
   };
 
@@ -220,6 +244,18 @@ export const Home = () => {
       carouselRef.current.scrollTo({ index: 0, animated: true });
     }
   }
+
+  // mandar resposta
+  function mandarResposta() {
+    const respostasChecklistOFFFiltered = respostasChecklistOFF.filter(
+      (resposta) => resposta.idPergunta !== 99999
+    );
+    const respostasChecklistONFiltered = respostasChecklistON.filter(
+      (resposta) => resposta.idPergunta !== 99999
+    );
+    console.log(respostasChecklistOFFFiltered);
+    console.log(respostasChecklistONFiltered);
+  }  
 
   // return do home
   return (
@@ -241,7 +277,7 @@ export const Home = () => {
           width={widthDimensions}
           height={widthDimensions / 2.8}
           autoPlay={false}
-          data={toogleChecklist === "off" ? checklistDataOFF : checklistDataON}
+          data={toogleChecklist === "OFF" ? checklistDataOFF : checklistDataON}
           snapEnabled={false}
           ref={carouselRef}
           scrollAnimationDuration={400}
@@ -260,7 +296,7 @@ export const Home = () => {
             <View style={styles.cardCarousel}>
               {/* view da pergunta pai, e para alinhar todos em uma borda */}
               {item.pergunta !== "" && (
-                <View className="flex-row p-1 pl-2 pe-2 rounded-md w-full max-w-full bg-light-primaria dark:bg-dark-primaria">
+                <View className="flex-row justify-between p-1 pl-2 pe-2 rounded-md w-full max-w-full bg-light-primaria dark:bg-dark-primaria">
                   {/* pressable do botão */}
                   <Pressable
                     onPress={() => {
@@ -279,6 +315,93 @@ export const Home = () => {
                   <Text className="text-base ml-2 max-w-[85%] text-light-text2 dark:text-dark-text2">
                     {String(index + 1).padStart(2, "0")} - {item.pergunta}
                   </Text>
+                  {/* view dos icones para responder  */}
+                  <View className="flex-row gap-2">
+                    <Pressable
+                      onPress={() =>
+                        setResposta(
+                          true,
+                          index,
+                          toogleChecklist
+                        )
+                      }>
+                      {toogleChecklist === "OFF" ? (
+                        <AntDesign
+                          name={
+                            respostasChecklistOFF[index] &&
+                            respostasChecklistOFF[index].resposta === true
+                              ? "checkcircle"
+                              : "checkcircleo"
+                          }
+                          size={24}
+                          color={
+                            respostasChecklistOFF[index] &&
+                            respostasChecklistOFF[index].resposta === true
+                              ? "green"
+                              : colors[colorScheme].icons
+                          }
+                        />
+                      ) : (
+                        <AntDesign
+                          name={
+                            respostasChecklistON[index] &&
+                            respostasChecklistON[index].resposta === true
+                              ? "checkcircle"
+                              : "checkcircleo"
+                          }
+                          size={24}
+                          color={
+                            respostasChecklistON[index] &&
+                            respostasChecklistON[index].resposta === true
+                              ? "green"
+                              : colors[colorScheme].icons
+                          }
+                        />
+                      )}
+                    </Pressable>
+                    <Pressable
+                      onPress={() =>
+                        setResposta(
+                          false,
+                          index,
+                          toogleChecklist
+                        )
+                      }>
+                      {toogleChecklist === "OFF" ? (
+                        <AntDesign
+                          name={
+                            respostasChecklistOFF[index] &&
+                            respostasChecklistOFF[index].resposta === false
+                              ? "closecircle"
+                              : "closecircleo"
+                          }
+                          size={24}
+                          color={
+                            respostasChecklistOFF[index] &&
+                            respostasChecklistOFF[index].resposta === false
+                              ? "red"
+                              : colors[colorScheme].icons
+                          }
+                        />
+                      ) : (
+                        <AntDesign
+                          name={
+                            respostasChecklistON[index] &&
+                            respostasChecklistON[index].resposta === false
+                              ? "closecircle"
+                              : "closecircleo"
+                          }
+                          size={24}
+                          color={
+                            respostasChecklistON[index] &&
+                            respostasChecklistON[index].resposta === false
+                              ? "red"
+                              : colors[colorScheme].icons
+                          }
+                        />
+                      )}
+                    </Pressable>
+                  </View>
                 </View>
               )}
               {/* view da descrição */}
@@ -313,9 +436,7 @@ export const Home = () => {
                 <>
                   {/* view do envio automatico */}
                   <View className="w-auto flex-row p-3 mb-8 justify-between rounded-md border border-light-primaria dark:border-dark-primaria">
-                    <Text className="mr-4 text-justify text-light-text dark:text-dark-text">
-                      {item.fim.autoSendTime}
-                    </Text>
+                    <TimerComponent time={item.fim.autoSendTime} />
                     <Text className="text-justify text-light-text dark:text-dark-text">
                       {item.fim.autoSendMessage}
                     </Text>
@@ -327,7 +448,7 @@ export const Home = () => {
                         key={msg.id}
                         className="flex-row justify-between p-3">
                         <View>{msg.icon}</View>
-                        <Text className="text-light-text dark:text-dark-text">
+                        <Text className="ml-4 text-light-text dark:text-dark-text">
                           {msg.message}
                         </Text>
                       </View>
@@ -341,7 +462,11 @@ export const Home = () => {
                       color: colors[colorScheme].text2,
                     }}
                     onPress={() => {
-                      setToogleChecklist("on");
+                      if (toogleChecklist === "OFF") {
+                        setToogleChecklist("ON");
+                      } else {
+                        mandarResposta();
+                      }
                     }}>
                     {item.fim.btn}
                   </Button>
